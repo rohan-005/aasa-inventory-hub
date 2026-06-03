@@ -1,13 +1,153 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum UnitGroup {
+  WEIGHT
+  VOLUME
+  COUNT
+}
+
+enum QuotationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ORDERED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String      @id @default(uuid()) @db.Uuid
+  email        String      @unique
+  name         String?
+  passwordHash String
+  role         Role        @default(USER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  quotations   Quotation[]
+  orders       Order[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model Product {
+  id                String          @id @default(uuid()) @db.Uuid
+  sku               String          @unique
+  name              String
+  description       String?
+  category          String
+  unitGroup         UnitGroup
+  baseUnit          String          // "g", "mL", "item"
+  pricePerBaseUnit  Decimal         @db.Decimal(20, 6)
+  active            Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  inventory         Inventory?
+  quotationItems    QuotationItem[]
+  orderItems        OrderItem[]
+
+  @@map("products")
+}
+
+model Inventory {
+  id           String   @id @default(uuid()) @db.Uuid
+  productId    String   @unique @db.Uuid
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  baseQuantity Decimal  @db.Decimal(20, 6) @default(0.000000)
+  location     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("inventory")
+}
+
+model Quotation {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  totalAmount    Decimal         @db.Decimal(20, 6)
+  status         QuotationStatus @default(PENDING)
+  validUntil     DateTime
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  quotationItems QuotationItem[]
+  orders         Order[]
+
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id               String    @id @default(uuid()) @db.Uuid
+  quotationId      String    @db.Uuid
+  quotation        Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  productId        String    @db.Uuid
+  product          Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity         Decimal   @db.Decimal(20, 6) // User entered quantity
+  unit             String    // User entered unit (e.g. kg, g, L, mL, item)
+  baseQuantity     Decimal   @db.Decimal(20, 6) // Converted to base unit quantity
+  pricePerBaseUnit Decimal   @db.Decimal(20, 6) // Locked price per base unit
+  lineTotal        Decimal   @db.Decimal(20, 6) // baseQuantity * pricePerBaseUnit
+  createdAt        DateTime  @default(now())
+
+  @@map("quotation_items")
+}
+
+model Order {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  quotationId String?     @db.Uuid
+  quotation   Quotation?  @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  totalAmount Decimal     @db.Decimal(20, 6)
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String   @id @default(uuid()) @db.Uuid
+  orderId          String   @db.Uuid
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId        String   @db.Uuid
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity         Decimal  @db.Decimal(20, 6)
+  unit             String
+  baseQuantity     Decimal  @db.Decimal(20, 6)
+  pricePerBaseUnit Decimal  @db.Decimal(20, 6)
+  lineTotal        Decimal  @db.Decimal(20, 6)
+  createdAt        DateTime @default(now())
+
+  @@map("order_items")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  entityType String   // "ORDER", "QUOTATION", "PRODUCT", "INVENTORY"
+  entityId   String   @db.Uuid
+  action     String   // "CREATE", "UPDATE", "DELETE", "STOCK_CHANGE"
+  details    Json
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
 }
