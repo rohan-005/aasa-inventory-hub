@@ -9,6 +9,7 @@ generator client {
 enum Role {
   ADMIN
   USER
+  BUYER
 }
 
 enum UnitGroup {

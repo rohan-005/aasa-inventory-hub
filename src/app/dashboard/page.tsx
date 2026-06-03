@@ -14,6 +14,8 @@ export default async function SellerDashboardPage() {
     redirect("/login");
   }
 
+  const isBuyer = session.user.role === "BUYER";
+
   // Fetch all active products
   const productsRaw = await prisma.product.findMany({
     where: { active: true },
@@ -21,18 +23,22 @@ export default async function SellerDashboardPage() {
     orderBy: { sku: "asc" },
   });
 
-  // Fetch only the current seller's quotations
+  // Fetch quotations based on role
+  // Sellers see their own; Buyers see APPROVED or ORDERED quotations to convert/view
   const quotationsRaw = await prisma.quotation.findMany({
-    where: { userId: session.user.id },
+    where: isBuyer 
+      ? { status: { in: ["APPROVED", "ORDERED"] } }
+      : { userId: session.user.id },
     include: {
       quotationItems: {
         include: { product: true },
       },
+      user: true,
     },
     orderBy: { createdAt: "desc" },
   });
 
-  // Fetch only the current seller's orders
+  // Fetch orders (both see their own placed orders)
   const ordersRaw = await prisma.order.findMany({
     where: { userId: session.user.id },
     include: {
@@ -93,13 +99,17 @@ export default async function SellerDashboardPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-white p-6 rounded shadow-sm border border-slate-200">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Seller Dashboard</h1>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {isBuyer ? "Buyer Dashboard" : "Seller Dashboard"}
+            </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Search the product catalog, add items to your cart, build quotations, and review your order history.
+              {isBuyer
+                ? "Review and purchase approved pharmaceutical quotations, and track order history."
+                : "Search the pharmaceutical product catalog, add items to your cart, build quotations, and review your order history."}
             </p>
           </div>
           <div className="bg-indigo-50 border border-indigo-100 rounded px-4 py-2 text-indigo-700 text-xs font-semibold self-start sm:self-auto">
-            Role: Sales Representative
+            Role: {isBuyer ? "Purchasing Agent" : "Sales Representative"}
           </div>
         </div>
 
@@ -107,6 +117,7 @@ export default async function SellerDashboardPage() {
           products={products}
           quotations={quotations}
           orders={orders}
+          userRole={session.user.role}
         />
       </main>
     </div>

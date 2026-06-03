@@ -5,12 +5,12 @@ import { convertToBaseUnit, convertFromBaseUnit, getSupportedUnitsForGroup } fro
 import { calculateLineTotal, formatINR } from "@/lib/pricing/pricing";
 import { createQuotation } from "@/actions/quotations";
 import { createDirectOrder, createOrderFromQuotation } from "@/actions/orders";
-import Decimal from "decimal.js";
 
 interface SellerDashboardViewProps {
   products: any[];
   quotations: any[];
   orders: any[];
+  userRole: "ADMIN" | "USER" | "BUYER";
 }
 
 interface CartItem {
@@ -30,8 +30,13 @@ export default function SellerDashboardView({
   products,
   quotations,
   orders,
+  userRole,
 }: SellerDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<"catalog" | "quotations" | "orders">("catalog");
+  const isBuyer = userRole === "BUYER";
+  
+  const [activeTab, setActiveTab] = useState<"catalog" | "quotations" | "orders" | "approved_quotations">(
+    isBuyer ? "approved_quotations" : "catalog"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartError, setCartError] = useState("");
@@ -59,7 +64,6 @@ export default function SellerDashboardView({
     const defaultUnit = getSupportedUnitsForGroup(product.unitGroup)[0] || product.baseUnit;
     const defaultQty = 1;
 
-    // Calculate base and line total
     const baseQty = convertToBaseUnit(defaultQty, defaultUnit).toNumber();
     const lineTotal = calculateLineTotal(baseQty, product.pricePerBaseUnit).toNumber();
 
@@ -189,20 +193,26 @@ export default function SellerDashboardView({
     return `${baseQty.toLocaleString()} item`;
   };
 
+  // Define tabs dynamically based on user role
+  const tabs = isBuyer
+    ? ([
+        { id: "approved_quotations", label: "Approved Quotations" },
+        { id: "orders", label: "My Order History" },
+      ] as const)
+    : ([
+        { id: "catalog", label: "Product Catalog & Cart Builder" },
+        { id: "quotations", label: "My Quotations" },
+        { id: "orders", label: "My Order History" },
+      ] as const);
+
   return (
     <div className="space-y-6">
       {/* Navigation tabs */}
       <div className="flex border-b border-slate-200 overflow-x-auto bg-white rounded shadow-sm">
-        {(
-          [
-            { id: "catalog", label: "Product Catalog & Cart Builder" },
-            { id: "quotations", label: "My Quotations" },
-            { id: "orders", label: "My Order History" },
-          ] as const
-        ).map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id as any)}
             className={`whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-colors ${
               activeTab === tab.id
                 ? "border-indigo-650 text-indigo-600 bg-indigo-50/20"
@@ -215,7 +225,7 @@ export default function SellerDashboardView({
       </div>
 
       {/* Tab content: Catalog */}
-      {activeTab === "catalog" && (
+      {activeTab === "catalog" && !isBuyer && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Product list */}
           <div className="lg:col-span-2 space-y-4">
@@ -376,12 +386,100 @@ export default function SellerDashboardView({
         </div>
       )}
 
-      {/* Tab content: Quotations */}
-      {activeTab === "quotations" && (
+      {/* Tab content: Approved Quotations (For Buyers) */}
+      {activeTab === "approved_quotations" && isBuyer && (
+        <div className="space-y-4">
+          <div className="bg-white p-4 rounded shadow-sm">
+            <h3 className="font-bold text-slate-800 text-lg">Approved Quotations Available for Purchase</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Select any quotation approved by Aasa Inventory Hub administrators to finalize your order.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {quotations.length === 0 ? (
+              <div className="bg-white p-8 text-center text-slate-500 rounded shadow border">
+                No approved quotations are currently available.
+              </div>
+            ) : (
+              quotations.map((quote) => (
+                <div key={quote.id} className="bg-white rounded shadow border border-slate-200 p-4 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start border-b pb-3 gap-2">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h4 className="font-bold text-slate-800">Quote ID: {quote.id.substring(0, 8)}...</h4>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            quote.status === "APPROVED"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {quote.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Prepared by Seller: {quote.user?.name || quote.user?.email} | Valid Until: {new Date(quote.validUntil).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-end">
+                      <p className="text-xs text-slate-500 font-semibold">Grand Total</p>
+                      <p className="text-lg font-bold text-indigo-700 font-mono">₹{formatINR(quote.totalAmount)}</p>
+
+                      {quote.status === "APPROVED" && (
+                        <button
+                          onClick={() => handleConvertToOrder(quote.id)}
+                          disabled={actionLoading === quote.id}
+                          className="bg-indigo-650 hover:bg-indigo-750 text-white text-[11px] font-bold px-4 py-1.5 rounded disabled:opacity-50 mt-2 transition-colors"
+                        >
+                          {actionLoading === quote.id ? "Placing..." : "Place Order Now"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Items list */}
+                  <div className="overflow-x-auto bg-slate-50 rounded border border-slate-100">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100 text-slate-600 border-b border-slate-200">
+                          <th className="p-2 font-semibold">SKU / Product</th>
+                          <th className="p-2 font-semibold text-right">Quantity</th>
+                          <th className="p-2 font-semibold text-right">Base Quantity (Audit)</th>
+                          <th className="p-2 font-semibold text-right">Base Price</th>
+                          <th className="p-2 font-semibold text-right">Line Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-150 text-slate-700">
+                        {quote.quotationItems.map((item: any) => (
+                          <tr key={item.id} className="hover:bg-slate-100/50">
+                            <td className="p-2">
+                              <p className="font-semibold">{item.product.name}</p>
+                              <p className="text-[9px] text-slate-400 font-mono">{item.product.sku}</p>
+                            </td>
+                            <td className="p-2 font-semibold text-right">{Number(item.quantity)} {item.unit}</td>
+                            <td className="p-2 font-mono text-slate-500 text-right">{Number(item.baseQuantity)} {item.product.baseUnit}</td>
+                            <td className="p-2 font-mono text-right">₹{formatINR(item.pricePerBaseUnit)}/{item.product.baseUnit}</td>
+                            <td className="p-2 font-mono font-bold text-right text-slate-900">₹{formatINR(item.lineTotal)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab content: Quotations (For Sellers) */}
+      {activeTab === "quotations" && !isBuyer && (
         <div className="space-y-4">
           <div className="bg-white p-4 rounded shadow-sm">
             <h3 className="font-bold text-slate-800 text-lg">My Quotations</h3>
-            <p className="text-xs text-slate-500 mt-1">Check approval status of your quotations and convert approved ones to orders.</p>
+            <p className="text-xs text-slate-500 mt-1">Check approval status of your quotations.</p>
           </div>
 
           <div className="space-y-4">
@@ -418,16 +516,6 @@ export default function SellerDashboardView({
                     <div className="flex flex-col items-end">
                       <p className="text-xs text-slate-500 font-semibold">Grand Total</p>
                       <p className="text-lg font-bold text-indigo-700 font-mono">₹{formatINR(quote.totalAmount)}</p>
-
-                      {quote.status === "APPROVED" && (
-                        <button
-                          onClick={() => handleConvertToOrder(quote.id)}
-                          disabled={actionLoading === quote.id}
-                          className="bg-indigo-650 hover:bg-indigo-750 text-white text-[11px] font-bold px-4 py-1.5 rounded disabled:opacity-50 mt-2 transition-colors"
-                        >
-                          {actionLoading === quote.id ? "Placing..." : "Place Order Now"}
-                        </button>
-                      )}
                     </div>
                   </div>
 

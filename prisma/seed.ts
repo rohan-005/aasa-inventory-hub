@@ -25,6 +25,7 @@ async function main() {
 
   const adminPasswordHash = bcrypt.hashSync("admin123", 10);
   const sellerPasswordHash = bcrypt.hashSync("seller123", 10);
+  const buyerPasswordHash = bcrypt.hashSync("buyer123", 10);
 
   const admin = await prisma.user.create({
     data: {
@@ -44,73 +45,82 @@ async function main() {
     },
   });
 
-  console.log(`Users seeded:\n- Admin: ${admin.email}\n- Seller: ${seller.email}`);
+  const buyer = await prisma.user.create({
+    data: {
+      email: "buyer@inventory.com",
+      name: "Buyer User",
+      passwordHash: buyerPasswordHash,
+      role: "BUYER",
+    },
+  });
+
+  console.log(`Users seeded:\n- Admin: ${admin.email}\n- Seller: ${seller.email}\n- Buyer: ${buyer.email}`);
 
   console.log("Seeding products and inventory...");
 
   const productsData = [
     // WEIGHT unit group (Base Unit = g)
     {
-      sku: "W-RICE-001",
-      name: "Premium Basmati Rice",
-      description: "Extra long grain basmati rice, aged for fragrance.",
-      category: "Grains",
+      sku: "W-PARA-001",
+      name: "Paracetamol API Powder",
+      description: "Active pharmaceutical ingredient powder for analgesic formulation.",
+      category: "API",
       unitGroup: "WEIGHT" as const,
       baseUnit: "g",
-      pricePerBaseUnit: 0.08, // ₹80 per kg => 80/1000 = ₹0.08/g
-      initialStock: 500000, // 500 kg in grams
+      pricePerBaseUnit: 0.80, // ₹800 per kg => 800/1000 = ₹0.80/g
+      initialStock: 1000000, // 1000 kg in grams
     },
     {
-      sku: "W-FLOUR-001",
-      name: "Organic Whole Wheat Flour",
-      description: "100% organic stone-ground whole wheat flour.",
-      category: "Grains",
+      sku: "W-AMOX-001",
+      name: "Amoxicillin Trihydrate",
+      description: "Antibiotic active pharmaceutical raw material.",
+      category: "API",
       unitGroup: "WEIGHT" as const,
       baseUnit: "g",
-      pricePerBaseUnit: 0.05, // ₹50 per kg => 50/1000 = ₹0.05/g
-      initialStock: 200000, // 200 kg in grams
+      pricePerBaseUnit: 1.20, // ₹1200 per kg => 1200/1000 = ₹1.20/g
+      initialStock: 500000, // 500 kg in grams
     },
     // VOLUME unit group (Base Unit = mL)
     {
-      sku: "V-OIL-001",
-      name: "Cold Pressed Mustard Oil",
-      description: "Pure cold-pressed mustard oil for traditional cooking.",
-      category: "Oils",
+      sku: "V-COUGH-001",
+      name: "Cough Syrup Syrup Base",
+      description: "Sucrose syrup vehicle base for liquid oral formulation.",
+      category: "Liquid Formulation",
       unitGroup: "VOLUME" as const,
       baseUnit: "mL",
-      pricePerBaseUnit: 0.18, // ₹180 per L => 180/1000 = ₹0.18/mL
-      initialStock: 150000, // 150 L in mL
+      pricePerBaseUnit: 0.25, // ₹250 per L => 250/1000 = ₹0.25/mL
+      initialStock: 2000000, // 2000 L in mL
     },
     {
-      sku: "V-MILK-001",
-      name: "Pasteurized Whole Milk",
-      description: "Fresh pasteurized whole milk, rich in cream.",
-      category: "Dairy",
+      sku: "V-SALINE-001",
+      name: "Intravenous Saline Solution",
+      description: "Sterile 0.9% sodium chloride infusion solution.",
+      category: "Intravenous",
       unitGroup: "VOLUME" as const,
       baseUnit: "mL",
-      pricePerBaseUnit: 0.06, // ₹60 per L => 60/1000 = ₹0.06/mL
-      initialStock: 50000, // 50 L in mL
+      pricePerBaseUnit: 0.09, // ₹90 per L => 90/1000 = ₹0.09/mL
+      initialStock: 1000000, // 1000 L in mL
     },
     // COUNT unit group (Base Unit = item)
     {
-      sku: "C-CUPS-001",
-      name: "Eco-friendly Paper Cups (Pack of 50)",
-      description: "Biodegradable paper cups, perfect for hot & cold drinks.",
-      category: "Packaging",
+      sku: "C-ASPR-100",
+      name: "Aspirin 75mg Tablets (Pack of 100)",
+      description: "Cardio-protective aspirin tablet blister packs.",
+      category: "Tablets",
       unitGroup: "COUNT" as const,
       baseUnit: "item",
-      pricePerBaseUnit: 120.0, // ₹120 per pack/item
-      initialStock: 1000, // 1000 packs
+      pricePerBaseUnit: 150.0, // ₹150 per pack/item
+      initialStock: 5000, // 5000 packs
     },
     {
-      sku: "C-PLATES-001",
-      name: "Biodegradable Plates (Pack of 25)",
-      description: "Sturdy plates made from sugarcane bagasse.",
-      category: "Packaging",
+      sku: "C-SYR-050",
+      name: "Disposable Sterile Syringes (Pack of 50)",
+      description: "Clinical sterile syringes with needles, 5mL volume.",
+      category: "Clinical Supplies",
       unitGroup: "COUNT" as const,
       baseUnit: "item",
-      pricePerBaseUnit: 90.0, // ₹90 per pack/item
-      initialStock: 500, // 500 packs
+      pricePerBaseUnit: 350.0, // ₹350 per pack/item
+      initialStock: 2000, // 2000 packs
     },
   ];
 
