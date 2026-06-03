@@ -53,42 +53,42 @@ export default function StockAdjustmentForm({ onSuccess, product }: StockAdjustm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200 text-sm">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-5 border border-zinc-200 font-sans text-xs">
       <div>
-        <h4 className="font-bold text-slate-800">Adjust Stock: {product.name}</h4>
-        <p className="text-xs text-slate-500 font-mono">SKU: {product.sku}</p>
+        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-900">Adjust Balance: {product.name}</h4>
+        <p className="text-[10px] text-zinc-400 font-mono">SKU: {product.sku}</p>
       </div>
 
       {error && (
-        <div className="p-2 text-xs text-red-650 bg-red-50 border border-red-100 rounded">
-          {error}
+        <div className="p-3 text-[11px] font-mono text-red-650 bg-red-50 border border-red-200">
+          [ERROR] {error}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-            Quantity (Positive to add, Negative to deduct)
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="block text-[9px] font-bold text-zinc-500 uppercase font-mono">
+            Adjustment Quantity (+/-)
           </label>
           <input
             type="number"
             step="0.001"
             required
-            placeholder="e.g. 5.5 or -2"
+            placeholder="e.g. 5.5 or -2.0"
             value={qtyChange}
             onChange={(e) => setQtyChange(e.target.value)}
-            className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 border border-zinc-200 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono"
           />
         </div>
 
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-            Unit
+        <div className="space-y-1">
+          <label className="block text-[9px] font-bold text-zinc-500 uppercase font-mono">
+            Adjustment Unit
           </label>
           <select
             value={selectedUnit}
             onChange={(e) => setSelectedUnit(e.target.value)}
-            className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 border border-zinc-200 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono"
           >
             {units.map((unit) => (
               <option key={unit} value={unit}>
@@ -99,32 +99,32 @@ export default function StockAdjustmentForm({ onSuccess, product }: StockAdjustm
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-            Warehouse Location
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="block text-[9px] font-bold text-zinc-500 uppercase font-mono">
+            Storage Coordinates
           </label>
           <input
             type="text"
             required
-            placeholder="Location..."
+            placeholder="Warehouse A, Rack 3..."
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 border border-zinc-200 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950"
           />
         </div>
 
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-            Adjustment Reason
+        <div className="space-y-1">
+          <label className="block text-[9px] font-bold text-zinc-500 uppercase font-mono">
+            Reason Log
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Restock, Damaged stock..."
+            placeholder="Restock, Damaged, Audit adjustment..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 border border-zinc-200 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950"
           />
         </div>
       </div>
@@ -133,7 +133,7 @@ export default function StockAdjustmentForm({ onSuccess, product }: StockAdjustm
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-650 hover:bg-indigo-750 text-white text-[11px] font-bold px-3 py-1.5 rounded disabled:opacity-50 transition-colors"
+          className="bg-zinc-950 hover:bg-zinc-900 text-white text-[10px] font-bold uppercase px-4 py-2 border border-zinc-950 transition-colors disabled:opacity-50 font-mono"
         >
           {loading ? "Adjusting..." : "Submit Adjustment"}
         </button>

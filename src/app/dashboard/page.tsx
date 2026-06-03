@@ -94,32 +94,15 @@ export default async function SellerDashboardPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
-      <Navbar user={session.user} />
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-white p-6 rounded shadow-sm border border-slate-200">
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isBuyer ? "Buyer Dashboard" : "Seller Dashboard"}
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {isBuyer
-                ? "Review and purchase approved pharmaceutical quotations, and track order history."
-                : "Search the pharmaceutical product catalog, add items to your cart, build quotations, and review your order history."}
-            </p>
-          </div>
-          <div className="bg-indigo-50 border border-indigo-100 rounded px-4 py-2 text-indigo-700 text-xs font-semibold self-start sm:self-auto">
-            Role: {isBuyer ? "Purchasing Agent" : "Sales Representative"}
-          </div>
-        </div>
-
-        <SellerDashboardView
-          products={products}
-          quotations={quotations}
-          orders={orders}
-          userRole={session.user.role}
-        />
-      </main>
-    </div>
+    <SellerDashboardView
+      products={products}
+      quotations={quotations}
+      orders={orders}
+      user={{
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role
+      }}
+    />
   );
 }

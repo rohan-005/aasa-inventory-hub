@@ -102,28 +102,16 @@ export default async function AdminDashboardPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
-      <Navbar user={session.user} />
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-white p-6 rounded shadow-sm border border-slate-200">
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Admin Control Panel</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Manage product catalogs, oversee warehouse inventory, review seller quotations, and inspect transaction logs.
-            </p>
-          </div>
-          <div className="bg-indigo-50 border border-indigo-100 rounded px-4 py-2 text-indigo-700 text-xs font-semibold self-start sm:self-auto">
-            Mode: Admin Enterprise
-          </div>
-        </div>
-
-        <AdminDashboardTabs
-          products={products}
-          quotations={quotations}
-          orders={orders}
-          auditLogs={auditLogs}
-        />
-      </main>
-    </div>
+    <AdminDashboardTabs
+      products={products}
+      quotations={quotations}
+      orders={orders}
+      auditLogs={auditLogs}
+      user={{
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role
+      }}
+    />
   );
 }

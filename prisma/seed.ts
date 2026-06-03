@@ -23,38 +23,37 @@ async function main() {
 
   console.log("Seeding users...");
 
+  // Password hashes
   const adminPasswordHash = bcrypt.hashSync("admin123", 10);
   const sellerPasswordHash = bcrypt.hashSync("seller123", 10);
   const buyerPasswordHash = bcrypt.hashSync("buyer123", 10);
 
-  const admin = await prisma.user.create({
-    data: {
-      email: "admin@inventory.com",
-      name: "Admin User",
-      passwordHash: adminPasswordHash,
-      role: "ADMIN",
-    },
-  });
+  const customAdminPasswordHash = bcrypt.hashSync("Admin@123", 10);
+  const customSellerPasswordHash = bcrypt.hashSync("Seller@123", 10);
+  const customBuyerPasswordHash = bcrypt.hashSync("Buyer@123", 10);
 
-  const seller = await prisma.user.create({
-    data: {
-      email: "seller@inventory.com",
-      name: "Seller User",
-      passwordHash: sellerPasswordHash,
-      role: "USER",
-    },
-  });
+  const users = [
+    // Standard accounts
+    { email: "admin@inventory.com", name: "Admin (Standard)", passwordHash: adminPasswordHash, role: "ADMIN" as const },
+    { email: "seller@inventory.com", name: "Seller (Standard)", passwordHash: sellerPasswordHash, role: "USER" as const },
+    { email: "buyer@inventory.com", name: "Buyer (Standard)", passwordHash: buyerPasswordHash, role: "BUYER" as const },
+    
+    // @assa.com accounts (from the design specification modal)
+    { email: "admin@assa.com", name: "Admin (Assa)", passwordHash: customAdminPasswordHash, role: "ADMIN" as const },
+    { email: "seller@assa.com", name: "Seller (Assa)", passwordHash: customSellerPasswordHash, role: "USER" as const },
+    { email: "buyer@assa.com", name: "Buyer (Assa)", passwordHash: customBuyerPasswordHash, role: "BUYER" as const },
 
-  const buyer = await prisma.user.create({
-    data: {
-      email: "buyer@inventory.com",
-      name: "Buyer User",
-      passwordHash: buyerPasswordHash,
-      role: "BUYER",
-    },
-  });
+    // @aasa.com accounts (corrected spelling)
+    { email: "admin@aasa.com", name: "Admin (Aasa)", passwordHash: customAdminPasswordHash, role: "ADMIN" as const },
+    { email: "seller@aasa.com", name: "Seller (Aasa)", passwordHash: customSellerPasswordHash, role: "USER" as const },
+    { email: "buyer@aasa.com", name: "Buyer (Aasa)", passwordHash: customBuyerPasswordHash, role: "BUYER" as const },
+  ];
 
-  console.log(`Users seeded:\n- Admin: ${admin.email}\n- Seller: ${seller.email}\n- Buyer: ${buyer.email}`);
+  for (const u of users) {
+    await prisma.user.create({ data: u });
+  }
+
+  console.log(`Successfully seeded ${users.length} users.`);
 
   console.log("Seeding products and inventory...");
 

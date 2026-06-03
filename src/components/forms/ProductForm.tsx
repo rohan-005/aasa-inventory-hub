@@ -84,71 +84,71 @@ export default function ProductForm({ onSuccess, product }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow border border-gray-250">
-      <h3 className="text-lg font-bold text-gray-900 border-b pb-2">
-        {isEdit ? "Edit Product Details" : "Create New Product"}
+    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 border border-zinc-200 font-sans">
+      <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-900 border-b pb-2">
+        {isEdit ? "Modify Catalog Item" : "Register Catalog Item"}
       </h3>
 
       {error && (
-        <div className="p-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded">
-          {error}
+        <div className="p-3 text-[11px] font-mono text-red-650 bg-red-50 border border-red-200">
+          [ERROR] {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {!isEdit && (
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              SKU (Unique Identifier)
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
+              SKU (Immutable Identifier)
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. W-RICE-001"
+              placeholder="e.g. W-API-PARACETAMOL-001"
               value={sku}
               onChange={(e) => setSku(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono uppercase"
             />
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
             Product Name
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Premium Basmati Rice"
+            placeholder="e.g. Paracetamol Raw API"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
             Category
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Grains, Oils, Disposables"
+            placeholder="e.g. API Active, Excipients, Liquid API"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950"
           />
         </div>
 
         {!isEdit && (
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
               Unit Measurement Group
             </label>
             <select
               value={unitGroup}
               onChange={(e) => setUnitGroup(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono"
             >
               <option value="WEIGHT">Weight (g, kg)</option>
               <option value="VOLUME">Volume (mL, L)</option>
@@ -157,8 +157,8 @@ export default function ProductForm({ onSuccess, product }: ProductFormProps) {
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <div className="space-y-1">
+          <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
             Price per Base Unit (₹)
           </label>
           <input
@@ -168,34 +168,34 @@ export default function ProductForm({ onSuccess, product }: ProductFormProps) {
             placeholder="e.g. 0.08"
             value={pricePerBaseUnit}
             onChange={(e) => setPricePerBaseUnit(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 font-mono"
           />
-          <p className="text-[10px] text-gray-500 mt-1 font-medium italic">
+          <p className="text-[9px] text-zinc-400 mt-1 font-mono italic">
             Base Unit: {getBaseUnitLabel()}. {getPriceHelpText()}
           </p>
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Description (Optional)
+      <div className="space-y-1">
+        <label className="block text-[10px] font-bold text-zinc-500 uppercase font-mono">
+          Description / Product notes
         </label>
         <textarea
           rows={2}
-          placeholder="Product notes or specifications..."
+          placeholder="Enter pharmaceutical grade details or storage specs..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full px-3 py-2 border border-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950"
         />
       </div>
 
-      <div className="flex justify-end space-x-2 pt-2">
+      <div className="flex justify-end pt-2">
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-650 hover:bg-indigo-750 text-white text-xs font-bold px-4 py-2 rounded disabled:opacity-50 transition-colors"
+          className="bg-zinc-950 hover:bg-zinc-900 text-white text-[10px] font-bold uppercase px-4 py-2 border border-zinc-950 transition-colors disabled:opacity-50 font-mono"
         >
-          {loading ? "Saving..." : isEdit ? "Update Product" : "Create Product"}
+          {loading ? "Registering..." : isEdit ? "Update Catalog" : "Register Product"}
         </button>
       </div>
     </form>
