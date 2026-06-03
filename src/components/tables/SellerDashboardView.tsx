@@ -252,6 +252,8 @@ export default function SellerDashboardView({
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       tabs={tabs}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
     >
       <div className="space-y-6">
         

@@ -34,6 +34,8 @@ interface AppLayoutProps {
   setActiveTab: (tab: string) => void;
   tabs: TabItem[];
   children: React.ReactNode;
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
 }
 
 export default function AppLayout({
@@ -42,9 +44,14 @@ export default function AppLayout({
   setActiveTab,
   tabs,
   children,
+  searchQuery,
+  setSearchQuery,
 }: AppLayoutProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  const isExpandedEffective = isExpanded || isHovered;
 
   const getRoleLabel = (role: string) => {
     switch (role) {
@@ -70,8 +77,10 @@ export default function AppLayout({
         
         {/* Navigation Rail (Desktop Only) */}
         <aside 
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
           className={`hidden md:flex flex-col justify-between border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-all duration-300 z-30 ${
-            isExpanded ? "w-[220px]" : "w-[72px]"
+            isExpandedEffective ? "w-[220px]" : "w-[72px]"
           }`}
         >
           {/* Rail Header / Logo */}
@@ -80,7 +89,7 @@ export default function AppLayout({
               <span className="font-mono text-xs font-bold bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-2 py-1 select-none">
                 AASA
               </span>
-              {isExpanded && (
+              {isExpandedEffective && (
                 <span className="font-mono text-[10px] font-bold text-zinc-500 tracking-wider uppercase truncate">
                   Inventory Hub
                 </span>
@@ -91,7 +100,7 @@ export default function AppLayout({
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 p-1"
             >
-              {isExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+              {isExpandedEffective ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>
           </div>
 
@@ -111,7 +120,7 @@ export default function AppLayout({
                   }`}
                 >
                   <Icon size={16} className="shrink-0" />
-                  {isExpanded && <span className="truncate">{tab.label}</span>}
+                  {isExpandedEffective && <span className="truncate">{tab.label}</span>}
                 </button>
               );
             })}
@@ -119,7 +128,7 @@ export default function AppLayout({
 
           {/* Rail Footer / User Section */}
           <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-            {isExpanded && (
+            {isExpandedEffective && (
               <div className="px-2 py-1.5 border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                 <p className="text-[10px] font-bold uppercase text-zinc-400 font-mono tracking-wider truncate">
                   {user.name || "User Account"}
@@ -138,7 +147,7 @@ export default function AppLayout({
               className={`w-full flex items-center space-x-3 px-3 py-2 transition-colors font-mono text-xs font-bold uppercase tracking-wider text-red-650 hover:text-red-700 border border-transparent hover:bg-red-50/50`}
             >
               <LogOut size={16} className="shrink-0" />
-              {isExpanded && <span>Sign Out</span>}
+              {isExpandedEffective && <span>Sign Out</span>}
             </button>
           </div>
         </aside>
@@ -157,7 +166,7 @@ export default function AppLayout({
                 {getRoleLabel(user.role)}
               </span>
               <span className="text-zinc-300">/</span>
-              <span className="font-mono text-xs font-bold text-zinc-950 dark:text-zinc-50 uppercase tracking-wide">
+              <span className="font-mono text-xs font-bold text-zinc-950 dark:text-zinc-55 uppercase tracking-wide">
                 {getActiveTabLabel()}
               </span>
             </div>
@@ -165,14 +174,16 @@ export default function AppLayout({
             {/* Right: Search, Notifications, Profile Indicator */}
             <div className="flex items-center space-x-4">
               
-              {/* Search Placeholder */}
-              <div className="hidden sm:flex items-center space-x-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-1 font-mono text-[10px]">
+              {/* Search input (functional) */}
+              <div className="flex items-center space-x-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-1 font-mono text-[10px]">
                 <Search size={12} className="text-zinc-400" />
                 <input 
                   type="text" 
-                  placeholder="SEARCH HUB (CMD+K)" 
-                  className="bg-transparent border-none outline-none text-zinc-700 dark:text-zinc-300 w-36 focus:w-48 transition-all uppercase placeholder-zinc-400"
-                  disabled
+                  placeholder="SEARCH HUB..." 
+                  value={searchQuery || ""}
+                  onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                  className="bg-transparent border-none outline-none text-zinc-700 dark:text-zinc-300 w-36 focus:w-48 transition-all uppercase placeholder-zinc-400 font-mono"
+                  disabled={!setSearchQuery}
                 />
               </div>
 
@@ -211,7 +222,7 @@ export default function AppLayout({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[9px] font-mono uppercase font-bold tracking-wider ${
-                isActive ? "text-zinc-950 dark:text-zinc-50" : "text-zinc-400 hover:text-zinc-650"
+                isActive ? "text-zinc-950 dark:text-zinc-55" : "text-zinc-400 hover:text-zinc-650"
               }`}
             >
               <Icon size={16} />

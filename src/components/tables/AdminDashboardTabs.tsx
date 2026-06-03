@@ -50,6 +50,7 @@ export default function AdminDashboardTabs({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleDeleteProduct = async (id: string) => {
     if (!confirm("Are you sure you want to deactivate this product?")) return;
@@ -123,12 +124,41 @@ export default function AdminDashboardTabs({
   const pendingQuotations = quotations.filter((q) => q.status === "PENDING");
   const lowStockProducts = products.filter((p) => Number(p.inventory?.baseQuantity || 0) < 5000);
 
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.sku.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredQuotations = quotations.filter(q => 
+    q.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (q.user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (q.user?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    q.status.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredOrders = orders.filter(o => 
+    o.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (o.user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (o.user?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    o.status.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredAuditLogs = auditLogs.filter(log => 
+    (log.user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (log.user?.email || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    log.entityType.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    log.action.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <AppLayout
       user={user}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       tabs={tabs}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
     >
       <div className="space-y-6">
         {actionError && (
@@ -241,7 +271,7 @@ export default function AdminDashboardTabs({
               </h3>
               
               <div className="border border-zinc-150 divide-y divide-zinc-150 font-mono text-[10px]">
-                {auditLogs.slice(0, 5).map((log) => (
+                {filteredAuditLogs.slice(0, 5).map((log) => (
                   <div key={log.id} className="flex justify-between items-start p-3 hover:bg-zinc-50 transition-colors gap-4">
                     <div className="space-y-1">
                       <span className="text-zinc-500">[{new Date(log.createdAt).toLocaleTimeString()}]</span>
@@ -321,7 +351,7 @@ export default function AdminDashboardTabs({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 font-mono">
-                  {products.map((prod) => (
+                  {filteredProducts.map((prod) => (
                     <tr key={prod.id} className="hover:bg-zinc-50/50">
                       <td className="p-3 font-bold">{prod.sku}</td>
                       <td className="p-3">
@@ -413,7 +443,7 @@ export default function AdminDashboardTabs({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 font-mono">
-                  {products.map((prod) => {
+                  {filteredProducts.map((prod) => {
                     const baseQty = Number(prod.inventory?.baseQuantity || 0);
                     const severity = getStockSeverity(baseQty);
                     
@@ -476,12 +506,12 @@ export default function AdminDashboardTabs({
             </div>
 
             <div className="space-y-4">
-              {quotations.length === 0 ? (
+              {filteredQuotations.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 font-mono text-xs border border-dashed border-zinc-200 bg-white">
                   No quotations submitted yet.
                 </div>
               ) : (
-                quotations.map((quote) => (
+                filteredQuotations.map((quote) => (
                   <div key={quote.id} className="border border-zinc-200 bg-white p-5 space-y-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
                       <div className="space-y-1">
@@ -588,12 +618,12 @@ export default function AdminDashboardTabs({
             </div>
 
             <div className="space-y-4">
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 font-mono text-xs border border-dashed border-zinc-200 bg-white">
                   No orders placed yet.
                 </div>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <div key={order.id} className="border border-zinc-200 bg-white p-5 space-y-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
                       <div className="space-y-1">
@@ -673,7 +703,7 @@ export default function AdminDashboardTabs({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 font-mono">
-                  {auditLogs.map((log) => {
+                  {filteredAuditLogs.map((log) => {
                     const isExpanded = expandedLogId === log.id;
                     return (
                       <tr key={log.id} className="hover:bg-zinc-50/50 align-top">
